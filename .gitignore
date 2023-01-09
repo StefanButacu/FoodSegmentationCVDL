@@ -1,0 +1,19 @@
+# Project exclude paths
+/models/data/
+models/unet_from_scratch/saved_images
+models/unet_from_scratch/saved_2
+/models/customdatasets.py
+/models/inference.py
+/models/lr_rate_finder.py
+/models/main_run.py
+/models/my_app_note.ipynb
+/models/my_model.pt
+/models/part1.ipynb
+/models/pilutil.py
+/models/saved_weights.ipynb
+/models/start.ipynb
+/models/trainer.py
+/models/transformations.py
+/models/unet.py
+/models/visual.py
+/venv/
