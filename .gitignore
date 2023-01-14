@@ -17,3 +17,6 @@ models/unet_from_scratch/saved_2
 /models/unet.py
 /models/visual.py
 /venv/
+models/unet_from_scratch/checkpoint.pth.tar
+/models/unet_from_scratch/validate/
+/models/unet_from_scratch/first_example_saved_img/
