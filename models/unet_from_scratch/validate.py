@@ -4,6 +4,8 @@ from albumentations.pytorch import ToTensorV2
 from tqdm import tqdm
 import torch.nn as nn
 import torch.optim as optim
+
+from models.unet_from_scratch.UNET_MODEL_FROM_SCRATCH import UNET_FROM_SCRATCH
 from models.unet_from_scratch.utils import get_loaders, save_checkpoint, print_measurements, save_predictions_as_imgs, \
     load_checkpoint
 
@@ -57,11 +59,11 @@ def validate():
                                            NUM_WORKERS,
                                            PIN_MEMORY
                                            )
-    model = UNET(in_channels=3, out_channels=1).to(DEVICE)
+    model = UNET_FROM_SCRATCH(in_channels=3, out_channels=1).to(DEVICE)
     if LOAD_MODEL:
-        load_checkpoint(torch.load('checkpoint.pth.tar'), model)
+        load_checkpoint(torch.load('check_unet_scratch.pth.tar'), model)
     print_measurements(val_loader, model)
-    save_predictions_as_imgs(val_loader, model, folder="validate/", device=DEVICE)
+    save_predictions_as_imgs(val_loader, model, folder="validate_unet/", device=DEVICE)
 
 
 

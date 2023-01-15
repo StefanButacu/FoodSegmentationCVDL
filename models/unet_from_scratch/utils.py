@@ -40,8 +40,6 @@ def get_loaders(TRAIN_IMG_DIR,
                               num_workers=NUM_WORKERS,
                               pin_memory=PIN_MEMORY,
                               shuffle=False)
-    VAL_IMG_DIR = TRAIN_IMG_DIR
-    VAL_MASK_DIR = TRAIN_MASK_DIR
     val_ds = FoodDataset(inputs=get_filenames_of_path(pathlib.Path(VAL_IMG_DIR)),
                        targets=get_filenames_of_path(pathlib.Path(VAL_MASK_DIR)),
                        transform=val_transfrom)
@@ -57,9 +55,9 @@ def print_measurements(loader, model, device="cpu"):
     num_correct = 0
     num_pixel = 0
     dice_score = 0
-    ioc = 0
+    iou = 0
+    print("printing measure")
     model.eval()
-
     with torch.no_grad():
         for x,y in loader:
             x = x.to(device)
@@ -71,24 +69,41 @@ def print_measurements(loader, model, device="cpu"):
             dice_score += (2 * (preds * y).sum()) / (
                 (preds + y).sum() + 1e-8
             )
-            batch_ioc = calculate_ioc1(preds, y)
-            ioc += batch_ioc
+            iou += (preds * y).sum() / ((preds + y).sum() + 1e-8)
 
+    model.train()
     print(f"Got {num_correct}/{num_pixel} with acc {num_correct/num_pixel * 100:.2f}", )
     print(f"Got dice_score:{dice_score/len(loader)} ")
-    print(f"Got ioc1:{ioc} ")
+    print(f"Got ioc1:{iou / len(loader)} ")
 
 
 def calculate_ioc1(preds, targets):
-    ioc = 0
+
+    iou = 0
     for i in range(len(preds)):
         pred = preds[i][0].numpy()
         target = targets[i].numpy()
         overlap = pred * target # logical and
         union = pred + target  # logical or
-        ioc += overlap.sum() / float(union.sum())
-    return ioc / len(preds)
+        iou += overlap.sum() / float(union.sum())
+    return iou
 
+def iou_pytorch(preds, targets):
+    SMOOTH = 1e-6
+    # You can comment out this line if you are passing tensors of equal shape
+    # But if you are passing output from UNet or something it will most probably
+    # be with the BATCH x 1 x H x W shape
+    preds = preds.squeeze(1)  # BATCH x 1 x H x W => BATCH x H x W
+    targets = targets.squeeze(1)  # BATCH x 1 x H x W => BATCH x H x W
+
+    intersection = (preds * targets).float().sum((1, 2))  # Will be zero if Truth=0 or Prediction=0
+    union = (preds + targets).float().sum((1, 2))         # Will be zzero if both are 0
+
+    iou = (intersection + SMOOTH) / (union + SMOOTH)  # We smooth our devision to avoid 0/0
+
+    thresholded = torch.clamp(20 * (iou - 0.5), 0, 10).ceil() / 10  # This is equal to comparing with thresolds
+
+    return thresholded  # Or thresholded.mean() if you are interested in average across the batch
 
 def save_predictions_as_imgs(loader, model, folder, device="cpu"):
     print("Saving images to....", folder)

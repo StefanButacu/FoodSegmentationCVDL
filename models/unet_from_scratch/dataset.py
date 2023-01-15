@@ -5,8 +5,8 @@ from PIL import Image
 
 class FoodDataset(data.Dataset):
     def __init__(self, inputs, targets, transform=None):
-        self.inputs = inputs[:100]
-        self.targets = targets[:100]
+        self.inputs = inputs[:1200]   #[:1000]
+        self.targets = targets[:1200]  # [:1000]
         self.transform = transform
         self.counter = 0
 
@@ -26,15 +26,15 @@ class FoodDataset(data.Dataset):
         mask = new_mask
         image, mask = np.array(image), np.array(mask, dtype=np.float32)
         if self.transform is not None:
-            # try:
+            try:
                 augmentations = self.transform(image=image, mask= mask)
                 image = augmentations["image"]
                 mask = augmentations["mask"]
-            # except  ValueError:
-            #     print("InputId_", input_ID)
-            #     print("TargetId_", target_ID)
-            #     self.counter +=1
-            #     print(f"value error for the {self.counter} time")
+            except  ValueError:
+                print("InputId_", input_ID)
+                print("TargetId_", target_ID)
+                self.counter +=1
+                print(f"value error for the {self.counter} time")
 
         return image, mask
 
